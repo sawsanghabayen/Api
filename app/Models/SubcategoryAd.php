@@ -9,5 +9,8 @@ class SubcategoryAd extends Model
 {
     use HasFactory;
 
-    
+    public function subcategory()
+    {
+        return $this->belongsTo(Subcategory::class, 'subcateggory_id', 'id');
+    }
 }

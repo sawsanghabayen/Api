@@ -22,12 +22,20 @@ class AdController extends Controller
      */
     public function index(Request $request)
     {
-
+    // dd( count(json_decode($request->subcategories, true)) );
        
        if (auth('user-api')->check()) {
 
-        if($request->has('minprice') || $request->has('maxprice') || $request->has('type') ){
-            if($request->has('minprice') && $request->has('maxprice')  && $request->has('type')  ){
+        if($request->has('minprice') || $request->has('maxprice') || $request->has('type') || $request->has('subcategories') ){
+            if($request->has('minprice') && $request->has('maxprice')  && $request->has('type') && $request->has('subcategories')  ){
+              
+                $ads_filter =Ad::whereBetween('price', [$request->minprice , $request->maxprice ])->where('type' , $request->type)->withCount(['subcategoryAds' => function ($query) use($request){
+                        $query->whereIn('subcategories_id',  json_decode($request->subcategories, true) );
+                    }])->having('subcategory_ads_count', '=', count(json_decode($request->subcategories, true)))->get();
+    
+    
+            }
+            elseif($request->has('minprice') && $request->has('maxprice')  && $request->has('type')  ){
               
                 $ads_filter =Ad::whereBetween('price', [$request->minprice , $request->maxprice ])->where('type' , $request->type)->get();
     
@@ -47,7 +55,16 @@ class AdController extends Controller
 
 
         }
+        elseif($request->has('subcategories')){
+            
+              
+                $ads_filter =Ad::withCount(['subcategoryAds' => function ($query) use($request){
+                        $query->whereIn('subcategories_id',  json_decode($request->subcategories, true) );
+                    }])->having('subcategory_ads_count', '=', count(json_decode($request->subcategories, true)))->get();
+    
 
+
+                }
         return response()->json([
             'status' => true,
             'message' => 'Success',
@@ -74,41 +91,7 @@ class AdController extends Controller
         }
 
     }
-    public function filterAds(Request $request)
-    {
-       
-          dd($request);
-        $validator = Validator($request->all(), [
-           
-            // 'price' => 'required|numeric|min:1',
-           
-        ]);
-
-        if (!$validator->fails()) {
-        //  $request->price =$request->get('price');
-       if (auth('user-api')->check()) {
-
-        $ads_filter=Ad::when($request->price ,function($query ,$value){
-            $query->where('price',$value);
-        })->get();
-       
-            return response()->json([
-                'status' => true,
-                'message' => 'Success',
-                'data' => [
-                'ads' => $ads_filter,
-                 
-                ]
-            ], Response::HTTP_OK);
-        }
-    }
-
-    else {
-        // dd(111);
-        return response()->json(['message' => $validator->getMessageBag()->first()], Response::HTTP_BAD_REQUEST);
-    }
-
-    }
+   
 
         /**
      * Display the specified resource.
@@ -121,7 +104,7 @@ class AdController extends Controller
         
         if (auth('user-api')->check()) {
             $ad = $ad->load(['images']);
-            $similarAds = Ad::first()->where('user_id', $ad->user_id)->where('category_id', $ad->category_id)->limit(4)->get();
+            $similarAds = Ad::first()->where('user_id', $ad->user_id)->limit(4)->get();
             $user=User::where('id', $ad->user_id)->get(['name' ,'image' ,'created_at' ,'facebook_url']);
             $ad->setAttribute('similarAds', $similarAds);
             $ad->setAttribute('user', $user);

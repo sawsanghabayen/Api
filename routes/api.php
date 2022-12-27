@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\FavoriteAdController;
 use App\Http\Controllers\Api\MessageController;
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\ReviewController;
+use App\Http\Controllers\Api\SubcategoryController;
 use App\Http\Controllers\Api\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -77,6 +78,8 @@ Route::middleware(['auth:user-api'])->group(function () {
     Route::get('chats', [ChatController::class , 'index']);
     Route::get('chats/{id}/messages', [MessageController::class , 'index']);
     Route::post('messages', [MessageController::class , 'store']);
+
+    Route::get('subcategories/{subcategory}', [SubcategoryController::class, 'show']);
 
 
 });

@@ -19,8 +19,8 @@ return new class extends Migration
             $table->string('description');
             $table->float('price');
             $table->enum('type', ['N', 'U'])->default('N');
-            $table->foreignId('category_id');
-            $table->foreign('category_id')->on('categories')->references('id')->cascadeOnDelete();
+            // $table->foreignId('category_id');
+            // $table->foreign('category_id')->on('categories')->references('id')->cascadeOnDelete();
 
             $table->foreignId('user_id');
             $table->foreign('user_id')->on('users')->references('id')->cascadeOnDelete();

@@ -9,8 +9,8 @@ class Ad extends Model
 {
     use HasFactory;
 
-    protected $hidden = ['category_id','user_id','created_at' ,'updated_at'];
-    protected $appends = ['store_name','store_image','category_name' ,'type_ad' ,'image_url', 'is_favorite', 'ad_reviews'];
+    protected $hidden = ['user_id','created_at' ,'updated_at'];
+    protected $appends = ['store_name','store_image' ,'subcategories_count','type_ad' ,'image_url', 'is_favorite', 'ad_reviews'];
     protected $casts = ['active'=>'boolean'];
 
     
@@ -51,10 +51,11 @@ class Ad extends Model
     {
         return $this->user()->first()->image;
     }
-    public function getCategoryNameAttribute()
-    {
-        return $this->category()->first()->name;
-    }
+
+    // public function getSubcategoryAdsNameAttribute()
+    // {
+    //     return $this->subcategoryAds()->subcategory->name;
+    // }
 
 
 
@@ -89,5 +90,12 @@ class Ad extends Model
     {
         return $this->hasMany(SubcategoryAd::class, 'ads_id', 'id');
     }
+
+    
+    public function getSubcategoriesCountAttribute()
+    {
+        return $this->subcategoryAds()->count();
+    }
+
 
 }
