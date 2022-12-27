@@ -27,7 +27,7 @@ class MessageController extends Controller
         if($user->whereHas('chats', function ($query) use($id) {
             $query->where('id', '=', $id);
         })->exists())
-        $messages= $user->chats()->findOrFail($id)->messages()->get();
+        $messages= $user->chats()->findOrFail($id)->messages()->with('user')->get();
         else
         $messages='Not Found Chat';
 

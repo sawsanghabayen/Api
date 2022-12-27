@@ -18,7 +18,7 @@ class ChatController extends Controller
      */
     public function index()
     {
-        $chats =auth('user-api')->user()->chats()->get();
+        $chats =auth('user-api')->user()->chats()->with('sender')->get();
         return response()->json([
             'status' => true,
             'message' => 'Success',

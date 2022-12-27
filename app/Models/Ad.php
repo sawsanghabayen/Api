@@ -78,10 +78,16 @@ class Ad extends Model
     {
         return $this->hasMany(FavoriteAd::class, 'ad_id', 'id');
     }
+    
 
     public function reviewAds()
     {
         return $this->hasMany(Review::class, 'ad_id', 'id');
+    }
+
+    public function subcategoryAds()
+    {
+        return $this->hasMany(SubcategoryAd::class, 'ads_id', 'id');
     }
 
 }

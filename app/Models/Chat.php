@@ -12,7 +12,6 @@ class Chat extends Model
     protected $casts = [ 'created_at' => 'datetime:Y-m-d'];
 
 
-
 public function sender()
 {
     return $this->belongsTo(User::class, 'sender_id', 'id');

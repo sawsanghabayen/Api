@@ -5,6 +5,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Ad;
 use App\Models\Image;
 use App\Models\Review;
+use App\Models\Subcategory;
+use App\Models\SubcategoryAd;
 use App\Models\User;
 use App\Notifications\NewAdNotification;
 use Illuminate\Http\Request;
@@ -170,11 +172,14 @@ class AdController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(Request $request ,Ad $ad)
     {
+        // dd(json_decode ($request->subcategories_id), true);
+    //    dd(gettype(json_decode($request->subcategories_id, true)));
+     
         $validator = Validator($request->all(), [
-            'category_id' => 'required|numeric|exists:categories,id',
-            // 'user_id' => 'required|numeric|exists:users,id',
+            // 'category_id' => 'required|numeric|exists:categories,id',
+            'subcategories_id' => 'required|exists:subcategories,id',
             'name' => 'required|string|min:3',
             'description' => 'required|string|min:3',
             'price' => 'required|numeric|min:1',
@@ -191,19 +196,20 @@ class AdController extends Controller
             $ad->description = $request->get('description');
             $ad->price = $request->get('price');
             $ad->type = $request->get('type');
-            $ad->category_id = $request->get('category_id');
+            // $ad->category_id = $request->get('category_id');
             $ad->active = $request->get('active') == 'true';
             $ad->user_id = auth('user-api')->id();
-
             $isSaved = $ad->save();
             $users=User::all();
             foreach ($users as $user) {
                 $user->notify(new NewAdNotification($ad));
             }
             if ($isSaved) {
+                // dd( $ad->id);
                 $this->saveImage($request, $ad, 'image_1');
                 $this->saveImage($request, $ad, 'image_2');
                 $this->saveImage($request, $ad, 'image_3');
+                $this->saveSubcategories($request, $ad);
             }
 
             return response()->json([
@@ -235,6 +241,47 @@ class AdController extends Controller
             $ad->images()->save($image);
         }
     }
+    private function saveSubcategories(Request $request, ad $ad ,bool $updated =false)
+    {
+
+        // dd($ad->id);
+        $array= explode(',', $request->get('subcategories_id'));
+
+    //    dd(json_decode($request->subcategories_id, true));
+        // $array=json_decode($request->subcategories_id, true);
+
+        if ($updated) {
+            if ($ad->user_id != auth('user-api')->id()) {
+                return response()->json(['status' => false, 'message' => 'You cannot delete an advertisement that does not follow you !'], Response::HTTP_BAD_REQUEST);
+            }
+            $subcategoryAds=SubcategoryAd::where('ads_id',$ad->id)->get();
+        foreach($subcategoryAds as $subcategoryAd)
+
+            $isDeleted = $subcategoryAd->delete();
+
+        }
+
+        foreach($array as $one){
+        
+            
+            
+           $subcategoryAd = new SubcategoryAd();
+            $subcategoryAd->ads_id = $ad->id;
+            $subcategoryAd->subcategories_id = $one;
+            
+            $ad->subcategoryAds()->save($subcategoryAd);
+        }
+    
+
+        //     $subcategoryAd = new SubcategoryAd();
+        // //    $array= explode(',', $request->get('subcategories_id'));
+        //     $subcategoryAd->ads_id = $ad->id;
+        //     // for ($i = 0; $i < $array; $i++)
+        //     $subcategoryAd->subcategories_id = (array)$request->get('subcategories_id');
+        //     // $subcategoryAd->subcategories_id = $array[$i];
+        //     $ad->subcategoryAds()->save($subcategoryAd);
+        
+}
 
    
 
@@ -254,7 +301,8 @@ class AdController extends Controller
         }
         
         $validator = Validator($request->all(), [
-            'category_id' => 'required|numeric|exists:categories,id',
+            // 'category_id' => 'required|numeric|exists:categories,id',
+            'subcategories_id' => 'required|exists:subcategories,id',
             'name' => 'required|string|min:3',
             'description' => 'required|string|min:3',
             'price' => 'required|numeric|min:1',
@@ -268,7 +316,7 @@ class AdController extends Controller
         
 
         if (!$validator->fails()) {
-            $ad->category_id = $request->get('category_id');
+            // $ad->category_id = $request->get('category_id');
             $ad->name = $request->get('name');
             $ad->description = $request->get('description');
             $ad->price = $request->get('price');
@@ -282,6 +330,9 @@ class AdController extends Controller
                 $this->saveImage($request, $ad, 'image_1' ,true);
                 $this->saveImage($request, $ad, 'image_2',true);
                 $this->saveImage($request, $ad, 'image_3',true);
+                $this->saveSubcategories($request, $ad ,true);
+
+
             }
 
             return response()->json([
