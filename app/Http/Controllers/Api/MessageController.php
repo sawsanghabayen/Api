@@ -26,9 +26,10 @@ class MessageController extends Controller
    
         if($user->whereHas('chats', function ($query) use($id) {
             $query->where('id', '=', $id);
-        })->exists())
+        })->exists()   )
         $messages= $user->chats()->findOrFail($id)->messages()->with('user')->get();
         else
+        
         $messages='Not Found Chat';
 
         return response()->json([
@@ -74,7 +75,8 @@ class MessageController extends Controller
             //     $chat=$user->chats()->where('id',$chat_id)->get();
             // }
             if($user_id){
-                // dd(111);
+      
+            // else
 
                 $chat=Chat::where('sender_id' ,$user->id )->where('receiver_id' ,$user_id )->orWhere('receiver_id' ,$user->id)->orWhere('sender_id' ,$user_id)->get();
             }
@@ -89,6 +91,18 @@ class MessageController extends Controller
             }
 
             // dd( $chat->first()->id);
+            // dd(111);
+
+            if ($user->blockedUsers()->where('blocked_user_id', $user_id)->orWhere('user_id', $user->id)->exists()) {
+
+                // dd(222);
+                $message='The User Blocked ! You Cant Sent The Message.';
+                return response()->json([
+                    'status' =>false, 'message' => $message,
+                  
+                ]);
+            }
+            else{
                 $message = new Message();
                 $message->user_id = $user->id;
                 $message->chat_id = $chat->first()->id;
@@ -99,7 +113,7 @@ class MessageController extends Controller
                   
                 ], $isSaved ? Response::HTTP_CREATED : Response::HTTP_BAD_REQUEST);
           
-            
+            }
         }
         else {
         

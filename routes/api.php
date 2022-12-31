@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\MessageController;
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\ReviewController;
 use App\Http\Controllers\Api\SubcategoryController;
+use App\Http\Controllers\Api\UserBlockController;
 use App\Http\Controllers\Api\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -80,6 +81,10 @@ Route::middleware(['auth:user-api'])->group(function () {
     Route::post('messages', [MessageController::class , 'store']);
 
     Route::get('subcategories/{subcategory}', [SubcategoryController::class, 'show']);
+
+    Route::post('/users/block', [UserController::class , 'block'])->name('users.block');
+
+    Route::get('/user_blocks', [UserBlockController::class , 'getBlockedUsers']);
 
 
 });

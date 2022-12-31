@@ -83,4 +83,9 @@ class User extends Authenticatable
     return $this->hasMany(Chat::class, 'sender_id', 'id');
 }
 
+public function blockedUsers()
+{
+    return $this->belongsToMany(User::class, 'user_blocks', 'user_id', 'blocked_user_id');
+}
+
 }
